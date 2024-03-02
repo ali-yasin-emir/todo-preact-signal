@@ -29,7 +29,9 @@ const handleAdd = () => {
 };
 
 const handleRemove = (id) => {
-  todos.value = [...todos.value.filter((todo) => todo.id !== id)];
+  // todos.value = [...todos.value.filter((todo) => todo.id !== id)];
+
+  todos.value = todos.value.filter((todo) => todo.id !== id);
 };
 
 const handleEdit = (id) => {
