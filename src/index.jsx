@@ -2,6 +2,7 @@ import { render } from "preact";
 
 import "./style.css";
 import { signal } from "@preact/signals";
+import { useRef } from "preact/hooks";
 
 const count = signal(0);
 const todos = signal([]);
@@ -9,12 +10,32 @@ const todo = signal("");
 const onEdit = signal(false);
 const completed = signal(false);
 
+const alert = signal("");
+const alertColor = signal("bg-red-700");
+
+
+
+// focus()
 const handleChange = (e) => {
   todo.value = e.target.value;
 };
 
 const handleAdd = () => {
-  if (todo.value !== "") {
+  
+  alert.value === "Before adding new one, complete your empty todo." || "Please add at least one todo." ? "bg-red-700" : "bg-green-700"
+  
+  if (todos.value.find((todo) => todo.text === "")) {
+    alert.value = "Before adding new one, complete your empty todo.";
+    alertColor.value = "bg-red-700"
+    return;
+  }
+
+  if (todo.value === "") {
+    alert.value = "Please add at least one todo.";
+    alertColor.value = "bg-red-700"
+  } else {
+    alert.value = "Todo is successfully added.";
+    alertColor.value = "bg-green-700"
     todos.value = [
       ...todos.value,
       {
@@ -25,54 +46,75 @@ const handleAdd = () => {
       },
     ];
   }
+
   todo.value = "";
 };
 
 const handleRemove = (id) => {
   // todos.value = [...todos.value.filter((todo) => todo.id !== id)];
 
+  alert.value = "Todo is successfully removed";
+  alertColor.value = "bg-green-700"
+
   todos.value = todos.value.filter((todo) => todo.id !== id);
-};
-
-const handleEdit = (id) => {
-  onEdit.value = !onEdit.value;
-  /* 
-  
-  todos.value = [
-     ...(todos.value.find((todo) => todo.id === id).onEdit = onEdit.value),
-   ];
-   [
-    ...(todos.value.find((todo) => todo.id === id).onEdit = onEdit.value),
-  ];
-
-*/
-  todos.value.find((todo) => todo.id === id).onEdit = onEdit.value;
-  todos.value.find((todo) => todo.id === id).completed = false;
 };
 
 const handleRename = (e, text) => {
   todos.value.find((todo) => todo.text === text).text = e.target.value;
 };
 
-const handleComplete = (id) => {
-  onEdit.value = !onEdit.value;
-
-  if (todo.value !== "") {
-    todos.value.find((todo) => todo.id === id).text = todo.value;
-  }
-  todos.value.find((todo) => todo.id === id).onEdit = false;
-};
-
 export function App() {
-  return (
-    <div className="flex flex-col gap-4">
-      <h1 className="self-start text-4xl">Todo</h1>
-      <h1>Count: {count.value}</h1>
-      <div className="flex gap-4 justify-center">
-        <button onClick={() => count.value++}>decrement</button>
-        <button onClick={() => count.value--}>increment</button>
-      </div>
+  const todoRef = useRef(null);
 
+  const handleEdit = (id) => {
+    todoRef.current.focus(); // AFTER
+    onEdit.value = !onEdit.value;
+    /* 
+      
+      todos.value = [
+         ...(todos.value.find((todo) => todo.id === id).onEdit = onEdit.value),
+       ];
+       [
+        ...(todos.value.find((todo) => todo.id === id).onEdit = onEdit.value),
+      ];
+    
+    */
+    todos.value.find((todo) => todo.id === id).onEdit = onEdit.value;
+    todos.value.find((todo) => todo.id === id).completed = false;
+  };
+
+  const handleComplete = (text, id) => {
+    alert.value = "Todo successfully renamed"
+    alertColor.value = "bg-green-700"
+    if (text === "") {
+      todoRef.current.focus(); // AFTER
+      return;
+    }
+    onEdit.value = !onEdit.value;
+    todos.value.find((todo) => todo.id === id).text = text;
+    todos.value.find((todo) => todo.id === id).onEdit = false;
+
+  };
+
+  return (
+    <div className="flex flex-col gap-8 w-[540px]">
+      <h1 className="self-center text-4xl">Todo</h1>
+      <div className="flex flex-col gap-4">
+        <h1>Count: {count.value}</h1>
+        <div className="flex gap-4 justify-center">
+          <button onClick={() => count.value++}>decrement</button>
+          <button onClick={() => count.value--}>increment</button>
+        </div>
+      </div>
+      <div className="flex justify-center h-[64px] px-6">
+        {alert.value && (
+          <p
+            className={`${alertColor} self-center w-fit px-6 py-4 rounded-lg  text-white`}
+          >
+            {alert.value}
+          </p>
+        )}
+      </div>
       <div className="flex justify-between">
         <input
           value={todo.value}
@@ -87,6 +129,7 @@ export function App() {
           Add
         </button>
       </div>
+
       <div className="flex flex-col gap-6">
         {todos.value.map((todo) => {
           console.log(todo.completed);
@@ -96,20 +139,22 @@ export function App() {
               className="flex justify-between gap-24 py-6 px-4 bg-slate-700 text-lg"
             >
               <input
+                ref={todoRef}
                 onChange={(e) => handleRename(e, todo.text)}
-                className={`bg-transparent outline-none ${
+                className={`px-2 py-1 bg-transparent outline-none focus:ring focus:ring-slate-300 ${
+                  // AFTER outline-none
                   onEdit.value ? "pointer-events-auto" : "pointer-events-none"
                 }`}
                 type="text"
                 value={todo.text}
               />
-              <div className="flex gap-2">
+              <div className="flex items-center gap-2">
                 <div>
                   {
                     <span
                       onClick={
                         todo.onEdit
-                          ? () => handleComplete(todo.id)
+                          ? () => handleComplete(todo.text, todo.id)
                           : () => handleEdit(todo.id)
                       }
                       className="cursor-pointer"
