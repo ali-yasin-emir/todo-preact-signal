@@ -96,7 +96,7 @@ export function App() {
               className="flex justify-between gap-24 py-6 px-4 bg-slate-700 text-lg"
             >
               <input
-                onChange={() => handleRename(todo.text)}
+                onChange={(e) => handleRename(e, todo.text)}
                 className={`bg-transparent outline-none ${
                   onEdit.value ? "pointer-events-auto" : "pointer-events-none"
                 }`}
