@@ -4,11 +4,10 @@ import "./style.css";
 import { signal } from "@preact/signals";
 
 const count = signal(0);
-
 const todos = signal([]);
 const todo = signal("");
-
 const onEdit = signal(false);
+const completed = signal(false);
 
 const handleChange = (e) => {
   todo.value = e.target.value;
@@ -22,10 +21,11 @@ const handleAdd = () => {
         id: crypto.randomUUID(),
         text: todo.value,
         onEdit: false,
-        completed: false,
+        completed: completed.value,
       },
     ];
   }
+  todo.value = "";
 };
 
 const handleRemove = (id) => {
@@ -47,13 +47,16 @@ const handleEdit = (id) => {
 
 */
   todos.value.find((todo) => todo.id === id).onEdit = onEdit.value;
+  todos.value.find((todo) => todo.id === id).completed = false;
 };
 
 const handleComplete = (id) => {
   onEdit.value = !onEdit.value;
+
   if (todo.value !== "") {
     todos.value.find((todo) => todo.id === id).text = todo.value;
     todos.value.find((todo) => todo.id === id).onEdit = false;
+    todos.value.find((todo) => todo.id === id).completed = false;
   }
 };
 
@@ -69,6 +72,7 @@ export function App() {
 
       <div className="flex justify-between">
         <input
+          value={todo.value}
           onChange={handleChange}
           type="text"
           className="w-full px-4 outline-none text-xl font-semibold"
@@ -82,6 +86,7 @@ export function App() {
       </div>
       <div className="flex flex-col gap-6">
         {todos.value.map((todo) => {
+          console.log(todo.completed);
           return (
             <div
               key={todo.id}
@@ -97,21 +102,18 @@ export function App() {
               />
               <div className="flex gap-2">
                 <div>
-                  {todo.onEdit ? (
+                  {
                     <span
-                      onClick={() => handleComplete(todo.id)}
+                      onClick={
+                        todo.onEdit
+                          ? () => handleComplete(todo.id)
+                          : () => handleEdit(todo.id)
+                      }
                       className="cursor-pointer"
                     >
-                      ✅
+                      {todo.onEdit ? "✅" : "✏️"}
                     </span>
-                  ) : (
-                    <span
-                      onClick={() => handleEdit(todo.id)}
-                      className="cursor-pointer"
-                    >
-                      ✏️
-                    </span>
-                  )}
+                  }
                 </div>
                 <span
                   onClick={() => handleRemove(todo.id)}
