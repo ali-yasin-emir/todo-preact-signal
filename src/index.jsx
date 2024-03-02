@@ -21,7 +21,7 @@ const handleAdd = () => {
       {
         id: crypto.randomUUID(),
         text: todo.value,
-        onEdit: onEdit.value,
+        onEdit: false,
         completed: false,
       },
     ];
