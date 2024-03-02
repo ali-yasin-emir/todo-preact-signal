@@ -21,7 +21,7 @@ const handleAdd = () => {
       {
         id: crypto.randomUUID(),
         text: todo.value,
-        onEdit: false,
+        onEdit: onEdit.value,
         completed: false,
       },
     ];
@@ -34,12 +34,24 @@ const handleRemove = (id) => {
 
 const handleEdit = (id) => {
   onEdit.value = !onEdit.value;
+  /* 
+  
+  todos.value = [
+     ...(todos.value.find((todo) => todo.id === id).onEdit = onEdit.value),
+   ];
+   [
+    ...(todos.value.find((todo) => todo.id === id).onEdit = onEdit.value),
+  ];
+
+*/
+  todos.value.find((todo) => todo.id === id).onEdit = onEdit.value;
 };
 
 const handleComplete = (id) => {
   onEdit.value = !onEdit.value;
   if (todo.value !== "") {
-    [...(todos.value.find((todo) => todo.id === id).text = todo.value)];
+    todos.value.find((todo) => todo.id === id).text = todo.value;
+    todos.value.find((todo) => todo.id === id).onEdit = false;
   }
 };
 
@@ -83,7 +95,7 @@ export function App() {
               />
               <div className="flex gap-2">
                 <div>
-                  {onEdit.value ? (
+                  {todo.onEdit ? (
                     <span
                       onClick={() => handleComplete(todo.id)}
                       className="cursor-pointer"
