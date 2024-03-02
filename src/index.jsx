@@ -50,14 +50,17 @@ const handleEdit = (id) => {
   todos.value.find((todo) => todo.id === id).completed = false;
 };
 
+const handleRename = (e, text) => {
+  todos.value.find((todo) => todo.text === text).text = e.target.value;
+};
+
 const handleComplete = (id) => {
   onEdit.value = !onEdit.value;
 
   if (todo.value !== "") {
     todos.value.find((todo) => todo.id === id).text = todo.value;
-    todos.value.find((todo) => todo.id === id).onEdit = false;
-    todos.value.find((todo) => todo.id === id).completed = false;
   }
+  todos.value.find((todo) => todo.id === id).onEdit = false;
 };
 
 export function App() {
@@ -93,7 +96,7 @@ export function App() {
               className="flex justify-between gap-24 py-6 px-4 bg-slate-700 text-lg"
             >
               <input
-                onChange={handleChange}
+                onChange={() => handleRename(todo.text)}
                 className={`bg-transparent outline-none ${
                   onEdit.value ? "pointer-events-auto" : "pointer-events-none"
                 }`}
