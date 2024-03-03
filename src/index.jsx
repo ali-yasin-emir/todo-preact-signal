@@ -67,7 +67,7 @@ export function App() {
   const todoRef = useRef(null);
 
   const handleEdit = (id) => {
-    todoRef.current.focus(); // AFTER
+    // TODO todoRef.current.focus(); 
     onEdit.value = !onEdit.value;
     /* 
       
@@ -132,7 +132,8 @@ export function App() {
 
       <div className="flex flex-col gap-6">
         {todos.value.map((todo) => {
-          console.log(todo.completed);
+          console.log(onEdit.value);
+
           return (
             <div
               key={todo.id}
@@ -143,7 +144,7 @@ export function App() {
                 onChange={(e) => handleRename(e, todo.text)}
                 className={`px-2 py-1 bg-transparent outline-none focus:ring focus:ring-slate-300 ${
                   // AFTER outline-none
-                  onEdit.value ? "pointer-events-auto" : "pointer-events-none"
+                  todo.onEdit ? "pointer-events-auto" : "pointer-events-none"
                 }`}
                 type="text"
                 value={todo.text}
