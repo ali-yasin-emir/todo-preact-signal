@@ -1,8 +1,7 @@
 import { render } from "preact";
 
 import "./style.css";
-import { signal } from "@preact/signals";
-import { useRef } from "preact/hooks";
+import { batch, signal } from "@preact/signals";
 
 const count = signal(0);
 const todos = signal([]);
@@ -13,7 +12,9 @@ const completed = signal(false);
 const alert = signal("");
 const alertColor = signal("bg-red-700");
 
+const focus = signal(false);
 
+const randomColor = signal("#000000");
 
 // focus()
 const handleChange = (e) => {
@@ -21,30 +22,49 @@ const handleChange = (e) => {
 };
 
 const handleAdd = () => {
-  
-  alert.value === "Before adding new one, complete your empty todo." || "Please add at least one todo." ? "bg-red-700" : "bg-green-700"
-  
+  alert.value === "Before adding new one, complete your empty todo." ||
+  "Please add at least one todo."
+    ? "bg-red-700"
+    : "bg-green-700";
   if (todos.value.find((todo) => todo.text === "")) {
     alert.value = "Before adding new one, complete your empty todo.";
-    alertColor.value = "bg-red-700"
+    alertColor.value = "bg-red-700";
     return;
   }
 
   if (todo.value === "") {
-    alert.value = "Please add at least one todo.";
-    alertColor.value = "bg-red-700"
+    batch(() => {
+      alert.value = "Please add at least one todo.";
+      alertColor.value = "bg-red-700";
+    });
   } else {
-    alert.value = "Todo is successfully added.";
-    alertColor.value = "bg-green-700"
-    todos.value = [
-      ...todos.value,
-      {
+    batch(() => {
+      randomColor.value = "#000000".replace(/0/g, function () {
+        return (~~(Math.random() * 16)).toString(16);
+      });
+      alert.value = "Todo is successfully added.";
+      alertColor.value = "bg-green-700";
+      todos.value.push({
         id: crypto.randomUUID(),
         text: todo.value,
         onEdit: false,
         completed: completed.value,
-      },
-    ];
+        color: randomColor.value,
+        focus: focus.value,
+      });
+      /* x
+      todos.value = [
+        ...todos.value,
+        {
+          id: crypto.randomUUID(),
+          text: todo.value,
+          onEdit: false,
+          completed: completed.value,
+          color: randomColor.value,
+        },
+      ];
+      */
+    });
   }
 
   todo.value = "";
@@ -54,7 +74,7 @@ const handleRemove = (id) => {
   // todos.value = [...todos.value.filter((todo) => todo.id !== id)];
 
   alert.value = "Todo is successfully removed";
-  alertColor.value = "bg-green-700"
+  alertColor.value = "bg-green-700";
 
   todos.value = todos.value.filter((todo) => todo.id !== id);
 };
@@ -64,11 +84,9 @@ const handleRename = (e, text) => {
 };
 
 export function App() {
-  const todoRef = useRef(null);
-
   const handleEdit = (id) => {
-    // TODO todoRef.current.focus(); 
     onEdit.value = !onEdit.value;
+    focus.value = !focus.value;
     /* 
       
       todos.value = [
@@ -81,19 +99,23 @@ export function App() {
     */
     todos.value.find((todo) => todo.id === id).onEdit = onEdit.value;
     todos.value.find((todo) => todo.id === id).completed = false;
+    todos.value.find((todo) => todo.id === id).focus = focus.value;
   };
 
   const handleComplete = (text, id) => {
-    alert.value = "Todo successfully renamed"
-    alertColor.value = "bg-green-700"
+    focus.value = !focus.value;
+
+    alert.value = "Todo successfully renamed";
+    alertColor.value = "bg-green-700";
     if (text === "") {
-      todoRef.current.focus(); // AFTER
+      alert.value = "Don't leave todo empty";
+      alertColor.value = "bg-red-700";
       return;
     }
     onEdit.value = !onEdit.value;
     todos.value.find((todo) => todo.id === id).text = text;
     todos.value.find((todo) => todo.id === id).onEdit = false;
-
+    todos.value.find((todo) => todo.id === id).focus = false;
   };
 
   return (
@@ -101,6 +123,9 @@ export function App() {
       <h1 className="self-center text-4xl">Todo</h1>
       <div className="flex flex-col gap-4">
         <h1>Count: {count.value}</h1>
+        <p className={`text-[${randomColor.value}]`}>
+          Color: {randomColor.value ? randomColor.value : "#00000"}
+        </p>
         <div className="flex gap-4 justify-center">
           <button onClick={() => count.value++}>decrement</button>
           <button onClick={() => count.value--}>increment</button>
@@ -109,7 +134,7 @@ export function App() {
       <div className="flex justify-center h-[64px] px-6">
         {alert.value && (
           <p
-            className={`${alertColor} self-center w-fit px-6 py-4 rounded-lg  text-white`}
+            className={`${alertColor.value} self-center w-fit px-6 py-4 rounded-lg  text-white`}
           >
             {alert.value}
           </p>
@@ -133,16 +158,17 @@ export function App() {
       <div className="flex flex-col gap-6">
         {todos.value.map((todo) => {
           console.log(onEdit.value);
-
+          console.log(todo.color);
           return (
             <div
               key={todo.id}
-              className="flex justify-between gap-24 py-6 px-4 bg-slate-700 text-lg"
+              className={`bg-black flex justify-between gap-24 py-6 px-4 text-lg`}
             >
               <input
-                ref={todoRef}
                 onChange={(e) => handleRename(e, todo.text)}
-                className={`px-2 py-1 bg-transparent outline-none focus:ring focus:ring-slate-300 ${
+                className={`${
+                  todo.focus && "ring ring-slate-300"
+                } px-2 py-1 bg-transparent outline-none ${
                   // AFTER outline-none
                   todo.onEdit ? "pointer-events-auto" : "pointer-events-none"
                 }`}
