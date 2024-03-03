@@ -1,18 +1,19 @@
 import { render } from "preact";
 
 import "./style.css";
-import { batch, signal } from "@preact/signals";
+import { batch, signal, useSignal } from "@preact/signals";
 
 const count = signal(0);
 const todos = signal([]);
 const todo = signal("");
 const onEdit = signal(false);
-const completed = signal(false);
 
 const alert = signal("");
 const alertColor = signal("bg-red-700");
 
 const focus = signal(false);
+
+const done = signal(false);
 
 const randomColor = signal("#000000");
 
@@ -48,7 +49,7 @@ const handleAdd = () => {
         id: crypto.randomUUID(),
         text: todo.value,
         onEdit: false,
-        completed: completed.value,
+        done: false,
         color: randomColor.value,
         focus: focus.value,
       });
@@ -83,8 +84,10 @@ const handleRename = (e, text) => {
   todos.value.find((todo) => todo.text === text).text = e.target.value;
 };
 
+
 export function App() {
   const handleEdit = (id) => {
+    todos.value.find(todo => todo.id === id).done = false
     onEdit.value = !onEdit.value;
     focus.value = !focus.value;
     /* 
@@ -104,7 +107,7 @@ export function App() {
 
   const handleComplete = (text, id) => {
     focus.value = !focus.value;
-
+    todos.value.find((todo) => todo.id === id).focus = false;
     alert.value = "Todo successfully renamed";
     alertColor.value = "bg-green-700";
     if (text === "") {
@@ -117,7 +120,10 @@ export function App() {
     todos.value.find((todo) => todo.id === id).onEdit = false;
     todos.value.find((todo) => todo.id === id).focus = false;
   };
-
+  const handleDone = (id) => {
+    todos.value.find((todo) => todo.id === id).done = false;
+  };
+  
   return (
     <div className="flex flex-col gap-8 w-[540px]">
       <h1 className="self-center text-4xl">Todo</h1>
@@ -161,12 +167,13 @@ export function App() {
           console.log(todo.color);
           return (
             <div
+              onClick={() => handleDone(todo.id)}
               key={todo.id}
               className={`bg-black flex justify-between gap-24 py-6 px-4 text-lg`}
             >
               <input
                 onChange={(e) => handleRename(e, todo.text)}
-                className={`${
+                className={`${todo.done && "line-through"} ${
                   todo.focus && "ring ring-slate-300"
                 } px-2 py-1 bg-transparent outline-none ${
                   // AFTER outline-none
