@@ -16,7 +16,7 @@ const getTodos = () => {
 
 const todos = signal(getTodos());
 
-
+const done = signal(false);
 
 const todo = signal("");
 const onEdit = signal(false);
@@ -30,7 +30,6 @@ const randomColor = signal("#000000");
 
 effect(() => {
   console.log("effect");
-
   // storing input name
   localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(todos.value));
 });
@@ -83,7 +82,7 @@ const handleAdd = () => {
           onEdit: false, // false
           done: false,
           color: randomColor.value,
-          focus: focus.value,
+          focus: false,
         },
       ];
     });
@@ -110,13 +109,15 @@ const handleRename = (e, text) => {
 
 const handleEdit = (id) => {
   console.log("handleEdit");
-  todos.value.find((todo) => todo.id === id).onEdit = !onEdit.value;
-  focus.value = !focus.value;
-  todos.value.find((todo) => todo.id === id).focus = focus.value;
+  console.log(todos.value.find((todo) => todo.id === id));
+  todos.value.find((todo) => todo.id === id).onEdit = true;
+
+  todos.value.find((todo) => todo.id === id).focus = true;
 
   console.log(
     "todo onEdit: " + todos.value.find((todo) => todo.id === id).onEdit
   );
+  
   /* 
     
     todos.value = [
@@ -153,9 +154,13 @@ const handleComplete = (text, id) => {
   todos.value = [...todos.value];
 };
 
+const handleDone = (text) => {
+  text;
+};
+
 export function App() {
   return (
-    <div className="flex flex-col gap-8 w-[540px]">
+    <div className="flex flex-col gap-8 w-[540px] items-center mx-auto">
       <h1 className="self-center text-4xl">Todo</h1>
       <div className="flex flex-col gap-4">
         <h1>Count: {count.value}</h1>
@@ -176,7 +181,7 @@ export function App() {
           </p>
         )}
       </div>
-      <div className="flex justify-between">
+      <div className="flex justify-between w-full">
         <input
           value={todo.value}
           onChange={handleChange}
@@ -191,26 +196,35 @@ export function App() {
         </button>
       </div>
 
-      <div className="flex flex-col gap-6">
-        {todos.value.map((todo) => {
+      <div className="flex gap-4">                                      
+        <h1>Todos Quantity:</h1>
+        <p>{todos.value.length}</p>
+      </div>
+
+      <div className="flex flex-col gap-6 w-full">
+        {todos.value.map((todo, index) => {
           return (
             <div
               key={todo.id}
-              className={`bg-black flex justify-between gap-24 py-6 px-4 text-lg`}
+              className={`bg-black flex justify-between gap-24 py-6 px-8 text-lg`}
             >
-              <input
-                onChange={(e) => handleRename(e, todo.text)}
-                className={`${
-                  todo.focus && "ring ring-slate-300"
-                } px-2 py-1 bg-transparent outline-none ${
-                  // AFTER outline-none
-                  todo.onEdit ? "pointer-events-auto" : "pointer-events-none"
-                }`}
-                type="text"
-                value={todo.text}
-              />
-              <div className="flex items-center gap-2">
-                <div>
+              <div className="flex items-center gap-4 w-5/6">
+                <span>{index + 1}</span>
+                <input
+                  onClick={() => handleDone(todo.text)}
+                  onChange={(e) => handleRename(e, todo.text)}
+                  className={`w-full ${
+                    todo.focus && "ring ring-slate-300"
+                  } px-2 py-1 w-full bg-transparent outline-none ${
+                    // AFTER outline-none
+                    todo.onEdit ? "pointer-events-auto" : "pointer-events-none"
+                  }`}
+                  type="text"
+                  value={todo.text}
+                />
+              </div>
+              <div className="w-1/6 flex items-center gap-2">
+                <div className="">
                   {
                     <span
                       onClick={
