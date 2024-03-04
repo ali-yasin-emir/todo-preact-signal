@@ -5,15 +5,17 @@ import { batch, effect, signal } from "@preact/signals";
 
 const count = signal(0);
 
-const LOCAL_STORAGE_KEY = ""
+const LOCAL_STORAGE_KEY = "TODOS";
 
 const getTodos = () => {
-const value = localStorage.getItem(LOCAL_STORAGE_KEY)
-if(value == null) return []
-return JSON.parse(value)
-}
+  console.log("getTodos");
+  const value = localStorage.getItem(LOCAL_STORAGE_KEY);
+  if (value == null) return [];
+  return JSON.parse(value);
+};
 
 const todos = signal(getTodos());
+
 
 
 const todo = signal("");
@@ -27,13 +29,14 @@ const focus = signal(false);
 const randomColor = signal("#000000");
 
 effect(() => {
-// storing input name
+  console.log("effect");
+
+  // storing input name
   localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(todos.value));
-  console.log(todos.value)
 });
 
-
 const handleChange = (e) => {
+  console.log("handleChange");
   todo.value = e.target.value;
 };
 
@@ -60,8 +63,8 @@ const handleAdd = () => {
       });
       alert.value = "Todo is successfully added.";
       alertColor.value = "bg-green-700";
-     
-    /* 
+
+      /* 
       todos.value.push({
         id: crypto.randomUUID(),
         text: todo.value,
@@ -72,7 +75,7 @@ const handleAdd = () => {
       });
 
     */
-   todos.value = [
+      todos.value = [
         ...todos.value,
         {
           id: crypto.randomUUID(),
@@ -83,7 +86,6 @@ const handleAdd = () => {
           focus: focus.value,
         },
       ];
-      
     });
   }
 
@@ -91,6 +93,8 @@ const handleAdd = () => {
 };
 
 const handleRemove = (id) => {
+  console.log("handleRemove");
+
   // todos.value = [...todos.value.filter((todo) => todo.id !== id)];
 
   alert.value = "Todo is successfully removed";
@@ -101,14 +105,18 @@ const handleRemove = (id) => {
 
 const handleRename = (e, text) => {
   todos.value.find((todo) => todo.text === text).text = e.target.value;
+  console.log("handleRename");
 };
 
 const handleEdit = (id) => {
-  onEdit.value = !onEdit.value
-  console.log("clicked edit")
-  todos.value.find((todo) => todo.id === id).onEdit = onEdit.value;
+  console.log("handleEdit");
+  todos.value.find((todo) => todo.id === id).onEdit = !onEdit.value;
   focus.value = !focus.value;
-  console.log("todo onEdit: " + todos.value.find((todo) => todo.id === id).onEdit)
+  todos.value.find((todo) => todo.id === id).focus = focus.value;
+
+  console.log(
+    "todo onEdit: " + todos.value.find((todo) => todo.id === id).onEdit
+  );
   /* 
     
     todos.value = [
@@ -120,16 +128,13 @@ const handleEdit = (id) => {
   
   */
   todos.value.find((todo) => todo.id === id).completed = false;
-  todos.value.find((todo) => todo.id === id).focus = focus.value;
-
 
   /// TUM BUGLARIMIN DERMANI
-  todos.value = [...todos.value]
-
+  todos.value = [...todos.value];
 };
 
 const handleComplete = (text, id) => {
-  console.log("clicked complete")
+  console.log("handleComplete");
 
   focus.value = !focus.value;
   todos.value.find((todo) => todo.id === id).focus = false;
@@ -145,13 +150,10 @@ const handleComplete = (text, id) => {
   todos.value.find((todo) => todo.id === id).focus = false;
 
   /// TUM BUGLARIMIN DERMANI
-  todos.value = [...todos.value]
-
-  
+  todos.value = [...todos.value];
 };
 
 export function App() {
-
   return (
     <div className="flex flex-col gap-8 w-[540px]">
       <h1 className="self-center text-4xl">Todo</h1>
@@ -191,7 +193,6 @@ export function App() {
 
       <div className="flex flex-col gap-6">
         {todos.value.map((todo) => {
-          console.log(todos.value );
           return (
             <div
               key={todo.id}
