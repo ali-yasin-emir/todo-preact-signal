@@ -2,13 +2,13 @@ import { render } from "preact";
 
 import "./style.css";
 import { batch, effect, signal } from "@preact/signals";
+import { Reorder } from "framer-motion";
 
 const count = signal(0);
 
 const LOCAL_STORAGE_KEY = "TODOS";
 
 const getTodos = () => {
-  console.log("getTodos");
   const value = localStorage.getItem(LOCAL_STORAGE_KEY);
   if (value == null) return [];
   return JSON.parse(value);
@@ -109,7 +109,6 @@ const handleRename = (e, text) => {
 
 const handleEdit = (id) => {
   console.log("handleEdit");
-  console.log(todos.value.find((todo) => todo.id === id));
   todos.value.find((todo) => todo.id === id).onEdit = true;
 
   todos.value.find((todo) => todo.id === id).focus = true;
@@ -117,7 +116,7 @@ const handleEdit = (id) => {
   console.log(
     "todo onEdit: " + todos.value.find((todo) => todo.id === id).onEdit
   );
-  
+
   /* 
     
     todos.value = [
@@ -128,7 +127,6 @@ const handleEdit = (id) => {
     ];
   
   */
-  todos.value.find((todo) => todo.id === id).completed = false;
 
   /// TUM BUGLARIMIN DERMANI
   todos.value = [...todos.value];
@@ -154,13 +152,15 @@ const handleComplete = (text, id) => {
   todos.value = [...todos.value];
 };
 
-const handleDone = (text) => {
-  text;
+const handleDone = (id) => {
+  done.value = !done.value;
+  todos.value.find((todo) => todo.id === id).done = done.value;
+  todos.value = [...todos.value];
 };
 
 export function App() {
   return (
-    <div className="flex flex-col gap-8 w-[540px] items-center mx-auto">
+    <div className="flex flex-col gap-8 w-[540px] items-center mx-auto py-24">
       <h1 className="self-center text-4xl">Todo</h1>
       <div className="flex flex-col gap-4">
         <h1>Count: {count.value}</h1>
@@ -196,26 +196,28 @@ export function App() {
         </button>
       </div>
 
-      <div className="flex gap-4">                                      
-        <h1>Todos Quantity:</h1>
-        <p>{todos.value.length}</p>
+      <div className="flex gap-4">
+        {todos.value.length !== 0 && (
+          <>
+            <h1>Todos Quantity:</h1> <p>{todos.value.length}</p>
+          </>
+        )}
       </div>
 
       <div className="flex flex-col gap-6 w-full">
         {todos.value.map((todo, index) => {
           return (
             <div
-              key={todo.id}
+              onClick={() => handleDone(todo.id)}
               className={`bg-black flex justify-between gap-24 py-6 px-8 text-lg`}
             >
               <div className="flex items-center gap-4 w-5/6">
                 <span>{index + 1}</span>
                 <input
-                  onClick={() => handleDone(todo.text)}
                   onChange={(e) => handleRename(e, todo.text)}
-                  className={`w-full ${
+                  className={`w-full ${onEdit && todo.done && "line-through"} ${
                     todo.focus && "ring ring-slate-300"
-                  } px-2 py-1 w-full bg-transparent outline-none ${
+                  } px-2 py-1 w-full bg-black outline-none ${
                     // AFTER outline-none
                     todo.onEdit ? "pointer-events-auto" : "pointer-events-none"
                   }`}

@@ -1,10 +1,10 @@
 import React from 'react'
 
-const TodoForm = () => {
+const ReorderPractice = () => {
   return (
-    <form>
+    <div>
         <AddTodo/>
-    </form>
+    </div>
   )
 }
 
